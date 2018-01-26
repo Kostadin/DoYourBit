@@ -1,0 +1,93 @@
+<html>
+<head>
+<title>TechDef</title>
+<link rel="stylesheet" type="text/css" href="css/main.css"/>
+<script type="text/javascript" src="js/jquery-2.2.0.min.js"></script>
+<script type="text/javascript" src="js/pixi.js"></script>
+<!-- <script type="text/javascript" src="js/sounds.js"></script> -->
+<script type="text/javascript" src="js/util.js"></script>
+<!-- <script type="text/javascript" src="js/global.js"></script> -->
+<!-- <script type="text/javascript" src="levels/level0.js"></script> -->
+<!-- <script type="text/javascript" src="levels/level1.js"></script> -->
+<!-- <script type="text/javascript" src="js/levelLoader.js"></script> -->
+<script type="text/javascript" src="js/renderer.js"></script>
+<script type="text/javascript" src="js/input.js"></script>
+<script type="text/javascript">
+$(function() {
+    // loadAnimations();
+	$('#btnPlay').click(function(){ startGame(0); });
+	var credits = ['Kostadin Vodenicharov - Dev', 'Nayden Pendov - Dev'];
+	shuffle(credits);
+	var logstr = 'Credits\n-------\n';
+	for (var i=0;i<credits.length;++i){
+		$('#creditsNames').append('<p>'+credits[i]+'</p>');
+		logstr+=credits[i]+'\n';
+	}
+	//$('#btnResume').click(function(){ startGame(localStorage['level'])});
+	console.log(logstr);
+	$('#credits').click(function(){
+		$('#credits').hide();
+		$('#mainMenu').show();
+	});
+	$('#btnCredits').click(function(){
+		$('#mainMenu').hide();
+		$('#credits').show();
+	});
+	$('#gameOver').click(function(){
+		$('#gameOver').hide();
+		$('#mainMenu').show();
+	})
+});
+</script>
+</head>
+<body style="background-color:black;">
+	<div id="container">
+		<div id="screen">
+			<div id="mainMenu" style="display:block;">
+				<div class="button" id="btnPlay">Play</div>
+				<div class="button" id="btnCredits">Credits</div>
+				<div class="button" id="btnResume">Resume</div>
+			</div>
+			<div id="credits" class="gameScreen" style="display:none;">
+				<div id="creditsTitle">
+					Credits
+				</div>
+				<div id="creditsNames">
+				</div>
+			</div>
+			<div id="transition" class="gameScreen" style="display:none;">
+				Level <span id="levelNumber"></span>
+				<!-- <div id="instructions"> -->
+				<!-- 	<p id="controls"> -->
+				<!-- 		CONTROLS<br/> -->
+				<!-- 		Click/Tap to move or interact<br/> -->
+				<!-- 		M - Toggle sound<br/> -->
+				<!-- 		P - Pause<br/> -->
+				<!-- 	</p> -->
+				<!-- </div> -->
+			</div>
+			<div id="level" class="gameScreen" style="display:none;"></div>
+			<div id="stats" style="display: none;">
+					<!-- <div id="healthbar">HP</div> -->
+					<!-- <div id="money"></div> -->
+					<!-- <span id="tower1" class="towerUI">Plasma tower (Q) - 100 gold</span> -->
+					<!-- <span id="tower2" class="towerUI">Laser tower (W) - 500 gold</span> -->
+					<!-- <span id="tower3" class="towerUI">Granade tower (E) - 250 gold</span> -->
+					<!-- <span id="destroyTower" class="towerUI">Destroy (D) + half tower price</span> -->
+			</div>
+			<div id="gameOver" class="gameScreen" style="display:none;">
+			</div>
+			<div id="youWin" style="display:none;">
+				YOU WIN
+			</div>
+		</div>
+	</div>
+<script>
+	//if(localStorage['level'] != null){
+	//	resumeButton = document.getElementById('btnResume');
+	//	resumeButton.style = "display: block";
+	//}
+</script>
+</body>
+</html>
+

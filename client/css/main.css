@@ -1,0 +1,188 @@
+﻿html{
+	margin:0px;
+	overflow:hidden;
+}
+
+body{
+	background-color:black;
+	margin:0px;
+	/* overflow:hidden; */
+}
+
+#container{
+	position:relative;
+}
+
+#screen{
+	position:relative;
+	width:1280px;
+	height:720px;
+	margin-left:auto;
+	margin-right:auto;
+	background-color:black;
+}
+
+#mainMenu{
+	position:absolute;
+	left:0px;
+	top:0px;
+	width:1280px;
+	height:720px;
+	z-index:100;
+	/* background-image: url('../assets/backgr.png'); */
+	background-repeat: no-repeat;
+	padding-top: 100px;
+}
+
+#titleLoop{
+	position:absolute;
+	left:0px;
+	top:0px;
+	z-index:-2;
+}
+
+.gameScreen{
+	position:absolute;
+	left:0px;
+	top:0px;
+	width:1280px;
+	height:720px;
+}
+
+#creditsTitle{
+	font-size:80px;
+	color:white;
+	text-align:center;
+	line-height:100px;
+}
+
+#creditsNames p{
+	font-size:40px;
+	color:white;
+	text-align:center;
+	line-height:50px;
+}
+
+#transition{
+	font-size:100px;
+	color:white;
+	background-color:black;
+	text-align:center;
+	line-height:720px;
+}
+
+#instructions{
+	position:absolute;
+	left:0px;
+	top:400px;
+	width:1280px;
+	height:150px;
+}
+
+#controls{
+	display: block;
+	width:512px;
+	margin-left:auto;
+	margin-right:auto;
+	text-align:center;
+	color:grey;
+	font-size:20px;
+	line-height:30px;
+}
+
+#gameOver{
+	font-size:100px;
+	font-weight:bold;
+	color:red;
+	background-image:url('../assets/gameover.png');
+	background-repeat: no-repeat;
+	text-align:center;
+	line-height:720px;
+}
+
+#youWin{
+	font-size:100px;
+	font-weight:bold;
+	color:yellow;
+	background-color:black;
+	text-align:center;
+	line-height:720px;
+}
+
+#level{
+	background-color: black;
+}
+
+#bgStuff{
+	position:absolute;
+	left:0px;
+	top:288px;
+	width:1280px;
+	height:288px;
+	background-color: black;
+	z-index:1;
+}
+
+#logo{
+	text-align:center;
+	color:white;
+	font-size:60px;
+}
+
+.button {
+	margin-top:80px;
+	margin-left:auto;
+	margin-right:auto;
+	width:250px;
+	height:70px;
+	text-align:center;
+	/*background-image: url('../img/button.png');*/
+	border-radius:5px;
+	cursor:pointer;
+	font-size:50px;
+	color:#ebdb2d;
+	text-shadow:0px 0px 25px rgb(197,50,21);
+	border:1px solid black;
+	line-height:70px;
+}
+
+.button:hover {
+	color:#ebdb2d;
+	border:1px solid #ebdb2d;
+	text-shadow:0px 0px 25px rgb(197,50,21);
+}
+
+#btnResume {
+	display: none;
+}
+
+#stats {
+	position: relative;
+	top: -15px;
+	left: 50px;
+	display: block;
+	text-align: left;
+}
+
+#healthbar {
+	display: block;
+	width: 1000px;
+	height: 20px;
+	background-color: green;
+	color: white;
+}
+
+#money {
+	display: inline-block;
+	color: white;
+}
+
+.towerUI {
+	color: white;
+	padding-left: 15px;
+}
+
+#money::before{
+	content: "Gold: ";
+	color: white;
+}
