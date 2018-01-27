@@ -9,7 +9,7 @@ function renderInit() {
 
 var moves = [];
 var moves_max = 50;
-var canModifyMoves = true;
+var canModifyMoves = false;
 function moves_debug() {
 	console.log(moves);
 }
@@ -83,6 +83,7 @@ function startGame() {
     		//console.log('Message from server ', event.data);
 			if (event.data == 'hb'){
 			} else if (event.data == 'client:OK'){
+				$('#gameplay_controls').show();
 				$('#line1').text('Authenticating...');
 				console.log(event.data);
 				socket.send('queue');
@@ -90,6 +91,7 @@ function startGame() {
 				$('#line1').text('Searching for partner...');
 				console.log('Queueing...')
 			} else if (event.data.indexOf('start:')===0){
+				canModifyMoves = true;
 				$('#line1').text('Game started. Awaiting commands...');
 				if (event.data==='start:0'){
 					$('#line2').text('Your robot is on the left.');
@@ -98,7 +100,6 @@ function startGame() {
 				}
 				console.log(event.data);
 				console.log('Game starting...');
-				$('#gameplay_controls').show();
 				//socket.send('submit\n0\n1\n2\n3');
 			} else if (event.data == 'submit:OK'){
 				$('#line1').text('Commands accepted.');
