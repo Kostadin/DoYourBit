@@ -9,7 +9,7 @@ function renderInit() {
 
 var moves = [];
 var moves_max = 50;
-var canModifyMoves = true;
+var canModifyMoves = false;
 function moves_debug() {
 	console.log(moves);
 }
@@ -72,6 +72,7 @@ function startGame() {
 	$('#commands').show();
 
 	// WebSocket
+	$('#line1').text('Connecting...');
 	socket = new WebSocket('ws://127.0.0.1:4420');
 	var socket_err = false;
 	socket.addEventListener('open', (event) => {
@@ -82,23 +83,36 @@ function startGame() {
     		//console.log('Message from server ', event.data);
 			if (event.data == 'hb'){
 			} else if (event.data == 'client:OK'){
+				$('#gameplay_controls').show();
+				$('#line1').text('Authenticating...');
 				console.log(event.data);
 				socket.send('queue');
 			} else if (event.data == 'queue:OK'){
+				$('#line1').text('Searching for partner...');
 				console.log('Queueing...')
 			} else if (event.data.indexOf('start:')===0){
+				canModifyMoves = true;
+				$('#line1').text('Game started. Awaiting commands...');
+				if (event.data==='start:0'){
+					$('#line2').text('Your robot is on the left.');
+				} else if (event.data==='start:1'){
+					$('#line2').text('Your robot is on the right.');
+				}
 				console.log(event.data);
 				console.log('Game starting...');
-				$('#gameplay_controls').show();
-				socket.send('submit\n0\n1\n2\n3');
+				//socket.send('submit\n0\n1\n2\n3');
 			} else if (event.data == 'submit:OK'){
+				$('#line1').text('Commands accepted.');
 				console.log('Program submission accepted.');
 				socket.send('simStart');
 			} else if (event.data == 'simStart:OK'){
+				$('#line1').text('Waiting for partner...');
 				console.log(event.data);
 			} else if (event.data == 'simStop:OK'){
+				$('#line1').text('Waiting for partner...');
 				console.log(event.data);
 			} else if (event.data == 'sim:started'){
+				$('#line1').text('Simulation running...');
 				console.log(event.data);
 				$('#btn_submit').hide();
 				$('#btn_stop').show();
@@ -108,11 +122,12 @@ function startGame() {
 				$('#btn_submit').show();
 				$('#btn_stop').hide();
 			} else if (event.data.indexOf('termination:')===0){
+				$('#line1').text('End of simulation.');
 				console.log(event.data);
 				alert(event.data.substring(12, event.data.length));
 				location.reload();
 			} else if (event.data.indexOf('{')===0){
-				console.log(event.data);
+				//console.log(event.data);
 				var level = JSON.parse(event.data);
 				update_stage(level);
 			}
@@ -197,13 +212,13 @@ function startGame() {
 	tiles.wall = [wall, wall];
 	let ground = PIXI.Texture.fromImage("assets/ground1.png");
 	tiles.ground = [ground, ground];
-	let door1 = PIXI.Texture.fromImage("assets/door0.png");
-	let door2 = PIXI.Texture.fromImage("assets/door1.png");
+	let door1 = PIXI.Texture.fromImage("assets/door1.png");
+	let door2 = PIXI.Texture.fromImage("assets/door2.png");
 	tiles.door = [door1, door2];
 	let plate = PIXI.Texture.fromImage("assets/plate1.png");
 	tiles.plate = [plate, plate];
-	let player2 = PIXI.Texture.fromImage("assets/player2.png");
 	let player1 = PIXI.Texture.fromImage("assets/player1.png");
+	let player2 = PIXI.Texture.fromImage("assets/player2.png");
 	tiles.player = [[player1, player1, player1, player1], [player2, player2, player2, player2]];
 	let exit = PIXI.Texture.fromImage("assets/exit1.png");
 	tiles.exit = [exit, exit];
