@@ -197,8 +197,8 @@ function startGame() {
 	tiles.wall = [wall, wall];
 	let ground = PIXI.Texture.fromImage("assets/ground1.png");
 	tiles.ground = [ground, ground];
-	let door1 = PIXI.Texture.fromImage("assets/door1.png");
-	let door2 = PIXI.Texture.fromImage("assets/door2.png");
+	let door1 = PIXI.Texture.fromImage("assets/door0.png");
+	let door2 = PIXI.Texture.fromImage("assets/door1.png");
 	tiles.door = [door1, door2];
 	let plate = PIXI.Texture.fromImage("assets/plate1.png");
 	tiles.plate = [plate, plate];
