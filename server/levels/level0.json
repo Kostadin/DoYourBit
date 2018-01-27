@@ -1,0 +1,64 @@
+{	
+	"map" :
+	[
+		[ "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w"],
+		[ "w", "w", "o", "o", "o", "o", "e", "w", "w", "w", "w", "w", "w", "w", "e", "o", "o", "o", "w", "w"],
+		[ "w", "w", "o", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "o", "w", "w"],
+		[ "w", "w", "o", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "o", "w", "w"],
+		[ "w", "w", "o", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "B", "w", "w"],
+		[ "w", "w", "C", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "D", "w", "w"],
+		[ "w", "w", "b", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "o", "w", "w"],
+		[ "w", "w", "o", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "o", "w", "w"],
+		[ "w", "w", "o", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "o", "w", "w"],
+		[ "w", "w", "i", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "j", "w", "w"],
+		[ "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w"]
+	],
+	"definition" : 
+	{
+		"w" : { "type" : "wall"},
+		"o" : { "type" : "floor"},
+		"i" :
+		{
+			"type" : "player",
+			"playerId" : 0
+		},
+		"j" :
+		{
+			"type" : "player",
+			"playerId" : 1
+		},
+		"D" : {
+			"type" : "door",
+			"closed" : true,
+			"triggerId": 0
+		},
+		"d" : 
+		{
+			"type" : "door",
+			"closed" : false,
+			"truggerId" : 0
+		},
+		"C" : {
+			"type" : "door",
+			"closed" : true,
+			"triggerId": 1
+		},
+		"c" : 
+		{
+			"type" : "door",
+			"closed" : false,
+			"truggerId" : 1
+		},
+		"b" : {
+			"type" : "button",
+			"triggerId" : 0
+		},
+		"B" : {
+			"type" : "button",
+			"triggerId" : 1
+		},
+		"e" : {
+			"type" : "goal"
+		}
+	}	
+}

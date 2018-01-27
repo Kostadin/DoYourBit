@@ -13,7 +13,7 @@ import org.java_websocket.server.WebSocketServer;
 public class GameServer extends WebSocketServer {
 	public static final int HEARTBEAT_INTERVAL_MS = 15000; // 15 seconds
 	public static final int STATE_UPDATE_INTERVAL_MS = 250; // 250 milliseconds;
-	
+
 	private class Client {
 		public String nickname;
 		public WebSocket socket;
@@ -28,10 +28,14 @@ public class GameServer extends WebSocketServer {
 		public boolean[] startVotes = new boolean[] { false, false };
 		public boolean[] stopVotes = new boolean[] { false, false };
 		public boolean simStarted;
+		public boolean sessionActive = true;
+		public GameState initialState;
+		public GameState currentState;
 		public Object lock = new Object();
 
 		public void start() {
 			simStarted = false;
+			initialState = new GameState(level);
 			clients[0].socket.send("start:0");
 			clients[1].socket.send("start:1");
 		}
@@ -39,6 +43,7 @@ public class GameServer extends WebSocketServer {
 		public void terminate(String reason) {
 			synchronized (lock) {
 				simStarted = false;
+				sessionActive = false;
 			}
 			synchronized (registerLock) {
 				gameSessionByID.remove(this.id);
@@ -51,7 +56,65 @@ public class GameServer extends WebSocketServer {
 					c.socket.send("termination:" + reason);
 				}
 			}
+			simThread.interrupt();
 		}
+
+		public void dualSend(String msg) {
+			for (int i = 0; i < clients.length; ++i) {
+				Client c = clients[i];
+				if (c != null) {
+					c.socket.send(msg);
+				}
+			}
+		}
+
+		public Thread simThread = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				while (sessionActive) {
+					try {
+						synchronized (lock) {
+							if (simStarted) {
+								// Initialize
+								if (currentState == null) {
+									currentState = (GameState) initialState.clone();
+								}
+								
+								// Update
+								
+								// Send new state
+								StringBuilder sb = new StringBuilder();
+								sb.append("{\"state\":[");
+								for (int y = 0; y < currentState.height; ++y) {
+									if (y > 0) {
+										sb.append(",");
+									}
+									sb.append("[");
+									ArrayList<ArrayList<GameObject>> row = currentState.level.get(y);
+									for (int x = 0; x < row.size(); ++x) {
+										ArrayList<GameObject> tile = row.get(x);
+										sb.append("[");
+										for (int i = 0; i < tile.size(); ++i) {
+											if (i > 0) {
+												sb.append(",");
+											}
+											tile.get(i).appendToSB(sb);;
+										}
+										sb.append("]");
+									}
+									sb.append("]");
+								}
+								sb.append("]}");
+								dualSend(sb.toString());
+							}
+						}
+						Thread.sleep(STATE_UPDATE_INTERVAL_MS);
+					} catch (Exception ex) {
+						// Ignore
+					}
+				}
+			}
+		});
 	}
 
 	public enum GameOp {
@@ -84,8 +147,8 @@ public class GameServer extends WebSocketServer {
 					synchronized (registerLock) {
 						pingClients = clients.toArray(new Client[] {});
 					}
-					if ((pingClients != null)&&(pingClients.length>0)) {
-						for (int i=0;i<pingClients.length;++i) {
+					if ((pingClients != null) && (pingClients.length > 0)) {
+						for (int i = 0; i < pingClients.length; ++i) {
 							pingClients[i].socket.send("hb");
 						}
 					}
@@ -127,149 +190,180 @@ public class GameServer extends WebSocketServer {
 
 	@Override
 	public void onError(WebSocket arg0, Exception arg1) {
-		// TODO Auto-generated method stub
 		System.out.println("ERROR " + arg1);
 	}
 
 	@Override
 	public void onMessage(WebSocket socket, String message) {
-		// TODO Auto-generated method stub
-		System.out.println("RECEIVED MESSAGE");
-		System.out.println(socket + ": " + message);
-		// socket.send("RECEIVED THIS MESSAGE: "+socket + ": " + message);
-		String[] lines = message.split("\n");
-		if (lines.length > 0) {
-			if (lines[0].equals("client") && lines.length >= 2) {
-				boolean sendConfirmation = false;
-				synchronized (registerLock) {
-					if (unidentifiedSockets.contains(socket)) {
-						Client c = new Client();
-						c.nickname = lines[1];
-						c.socket = socket;
-						unidentifiedSockets.remove(socket);
-						clientBySocket.put(socket, c);
-						clients.add(c);
-						sendConfirmation = true;
-					}
-				}
-				if (sendConfirmation) {
-					socket.send("client:" + lines[0]);
-					System.out.println(lines[0]);
-					System.out.println(lines[1]);
-					// System.out.println(lines[2]);
-				}
-			} else if (lines[0].equals("queue")) {
-				boolean sendConfirmation = false;
-				synchronized (registerLock) {
-					Client client = clientBySocket.get(socket);
-					if ((client != null) && (client.session == null) && (!matchMakingQueue.contains(client))) {
-						matchMakingQueue.add(client);
-						sendConfirmation = true;
-					}
-				}
-				if (sendConfirmation) {
-					socket.send("queue:OK");
-					boolean startMatch = false;
-					GameSession session = null;
+		try {
+			System.out.println("RECEIVED MESSAGE");
+			System.out.println(socket + ": " + message);
+			String[] lines = message.split("\n");
+			if (lines.length > 0) {
+				if (lines[0].equals("client") && lines.length >= 2) {
+					boolean sendConfirmation = false;
 					synchronized (registerLock) {
-						if (matchMakingQueue.size() >= 2) {
-							Client client1 = matchMakingQueue.get(0);
-							Client client2 = matchMakingQueue.get(1);
-							session = new GameSession();
-							Random r = new Random();
-							String id = null;
-							do {
-								id = new Integer(r.nextInt(Integer.MAX_VALUE)).toString();
-							} while (gameSessionByID.containsKey(id));
-							session.id = id;
-							session.level = 0;
-							session.clients = new Client[] { client1, client2 };
-							client1.session = session;
-							client2.session = session;
-							gameSessionByID.put(id, session);
-							sessions.add(session);
-							startMatch = true;
+						if (unidentifiedSockets.contains(socket)) {
+							Client c = new Client();
+							c.nickname = lines[1];
+							c.socket = socket;
+							unidentifiedSockets.remove(socket);
+							clientBySocket.put(socket, c);
+							clients.add(c);
+							sendConfirmation = true;
 						}
 					}
-					if (startMatch) {
-						session.start();
+					if (sendConfirmation) {
+						socket.send("client:" + lines[0]);
+						System.out.println(lines[0]);
+						System.out.println(lines[1]);
+						// System.out.println(lines[2]);
 					}
-				}
-			} else if (lines[0].equals("start")) {
-				Client client = null;
-				boolean startOK = false;
-				synchronized (registerLock) {
-					client = clientBySocket.get(socket);
-				}
-				if ((client != null) && (client.session != null)) {
-					synchronized (client.session.lock) {
-						if (client.session.simStarted == false) {
-							for (int i = 0; i < 2; ++i) {
-								if (client.session.clients[i] == client) {
-									client.session.startVotes[i] = true;
-									startOK = true;
-									break;
-								}
+				} else if (lines[0].equals("queue")) {
+					boolean sendConfirmation = false;
+					synchronized (registerLock) {
+						Client client = clientBySocket.get(socket);
+						if ((client != null) && (client.session == null) && (!matchMakingQueue.contains(client))) {
+							matchMakingQueue.add(client);
+							sendConfirmation = true;
+						}
+					}
+					if (sendConfirmation) {
+						socket.send("queue:OK");
+						boolean startMatch = false;
+						GameSession session = null;
+						synchronized (registerLock) {
+							if (matchMakingQueue.size() >= 2) {
+								Client client1 = matchMakingQueue.get(0);
+								Client client2 = matchMakingQueue.get(1);
+								session = new GameSession();
+								Random r = new Random();
+								String id = null;
+								do {
+									id = new Integer(r.nextInt(Integer.MAX_VALUE)).toString();
+								} while (gameSessionByID.containsKey(id));
+								session.id = id;
+								session.level = 0;
+								session.clients = new Client[] { client1, client2 };
+								client1.session = session;
+								client2.session = session;
+								gameSessionByID.put(id, session);
+								sessions.add(session);
+								startMatch = true;
 							}
 						}
-
-					}
-				}
-				if (startOK) {
-					client.socket.send("start:OK");
-				}
-			} else if (lines[0].equals("stop")) {
-				Client client = null;
-				boolean stopOK = false;
-				synchronized (registerLock) {
-					client = clientBySocket.get(socket);
-				}
-				if ((client != null) && (client.session != null)) {
-					synchronized (client.session.lock) {
-						if (client.session.simStarted == true) {
-							for (int i = 0; i < 2; ++i) {
-								if (client.session.clients[i] == client) {
-									client.session.stopVotes[i] = true;
-									stopOK = true;
-									break;
-								}
-							}
+						if (startMatch) {
+							session.start();
 						}
 					}
-				}
-				if (stopOK) {
-					client.socket.send("stop:OK");
-				}
-			} else if (lines[0].equals("submit")) {
-				Client client = null;
-				boolean submitOK = false;
-				synchronized (registerLock) {
-					client = clientBySocket.get(socket);
-				}
-				if ((client != null) && (client.session != null)) {
-					synchronized (client.session.lock) {
-						if (client.session.simStarted == false) {
-							GameOp[] newInstructions = new GameOp[lines.length - 1];
-							int j = 0;
-							for (int i = 0; i < lines.length; ++i) {
-								try {
-									int idx = Integer.parseInt(lines[i + 1]);
-									if ((idx >= 0) && (idx < gameOpValues.length)) {
-										GameOp op = gameOpValues[idx];
-										newInstructions[j++] = op;
+				} else if (lines[0].equals("start")) {
+					Client client = null;
+					boolean startOK = false;
+					synchronized (registerLock) {
+						client = clientBySocket.get(socket);
+					}
+					if ((client != null) && (client.session != null)) {
+						synchronized (client.session.lock) {
+							if (client.session.simStarted == false) {
+								for (int i = 0; i < 2; ++i) {
+									if (client.session.clients[i] == client) {
+										client.session.startVotes[i] = true;
+										startOK = true;
+										break;
 									}
-								} catch (Exception ex) {
-									// Ignored
 								}
 							}
-							client.instructions = newInstructions;
-							submitOK = true;
+
 						}
 					}
+					if (startOK) {
+						client.socket.send("start:OK");
+						boolean didSimStart = false;
+						synchronized (client.session.lock) {
+							if ((!client.session.simStarted) && client.session.startVotes[0]
+									&& client.session.startVotes[1]) {
+								client.session.startVotes[0] = false;
+								client.session.startVotes[1] = false;
+								client.session.simStarted = true;
+								didSimStart = true;
+							}
+						}
+						if (didSimStart) {
+							client.session.dualSend("sim:started");
+						}
+					}
+				} else if (lines[0].equals("stop")) {
+					Client client = null;
+					boolean stopOK = false;
+					synchronized (registerLock) {
+						client = clientBySocket.get(socket);
+					}
+					if ((client != null) && (client.session != null)) {
+						synchronized (client.session.lock) {
+							if (client.session.simStarted == true) {
+								for (int i = 0; i < 2; ++i) {
+									if (client.session.clients[i] == client) {
+										client.session.stopVotes[i] = true;
+										stopOK = true;
+										break;
+									}
+								}
+							}
+						}
+					}
+					if (stopOK) {
+						boolean didSimStop = false;
+						synchronized (client.session.lock) {
+							if (client.session.simStarted && client.session.stopVotes[0]
+									&& client.session.stopVotes[1]) {
+								client.session.stopVotes[0] = false;
+								client.session.stopVotes[1] = false;
+								client.session.simStarted = false;
+								client.session.currentState = null;
+								didSimStop = true;
+							}
+						}
+						client.socket.send("stop:OK");
+						if (didSimStop) {
+							client.session.dualSend("sim:stopped");
+						}
+					}
+				} else if (lines[0].equals("submit")) {
+					Client client = null;
+					boolean submitOK = false;
+					synchronized (registerLock) {
+						client = clientBySocket.get(socket);
+					}
+					if ((client != null) && (client.session != null)) {
+						synchronized (client.session.lock) {
+							if (client.session.simStarted == false) {
+								GameOp[] newInstructions = new GameOp[lines.length - 1];
+								int j = 0;
+								for (int i = 0; i < lines.length; ++i) {
+									try {
+										int idx = Integer.parseInt(lines[i + 1]);
+										if ((idx >= 0) && (idx < gameOpValues.length)) {
+											GameOp op = gameOpValues[idx];
+											newInstructions[j++] = op;
+										}
+									} catch (Exception ex) {
+										// Ignored
+									}
+								}
+								client.instructions = newInstructions;
+								submitOK = true;
+							}
+						}
+					}
+					if (submitOK) {
+						client.socket.send("submit:OK");
+					}
 				}
-				if (submitOK) {
-					client.socket.send("submit:OK");
-				}
+			}
+		} catch (Exception ex) {
+			synchronized (registerLock) {
+				System.err.println(ex.getMessage());
+				ex.printStackTrace(System.err);
 			}
 		}
 	}
