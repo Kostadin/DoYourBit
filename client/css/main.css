@@ -167,10 +167,19 @@ body{
 #command_log {
 	display:block;
 	width: 320px;
-	height: 576px;
+	height: 512px;
 	overflow-y: auto;
 	overflow-x: hidden;
 	background: grey;
+}
+#server_log {
+	display:block;
+	width: 320px;
+	height: 64px;
+	color: grey;
+	background: black;
+	padding: 8px;
+	line-height: 24px;
 }
 
 #chat {

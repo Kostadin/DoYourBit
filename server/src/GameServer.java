@@ -14,6 +14,7 @@ public class GameServer extends WebSocketServer {
 	public static final int HEARTBEAT_INTERVAL_MS = 15000; // 15 seconds
 	public static final int STATE_UPDATE_INTERVAL_MS = 250; // 250 milliseconds;
 	public static final int MAX_INSTRUCTIONS = 50;
+	public static final int TOTAL_LEVEL_COUNT = 1;
 	public static final int[][] MOVE_VECTORS = new int[][] {{0, -1}, {1, 0}, {0, 1}, {-1, 0}};
 
 	private class Client {
@@ -343,7 +344,7 @@ public class GameServer extends WebSocketServer {
 									id = new Integer(r.nextInt(Integer.MAX_VALUE)).toString();
 								} while (gameSessionByID.containsKey(id));
 								session.id = id;
-								session.level = 0;
+								session.level = new Random().nextInt(TOTAL_LEVEL_COUNT);
 								session.clients = new Client[] { client1, client2 };
 								client1.session = session;
 								client2.session = session;
