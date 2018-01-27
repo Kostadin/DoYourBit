@@ -14,6 +14,7 @@ public class GameServer extends WebSocketServer {
 	public static final int HEARTBEAT_INTERVAL_MS = 15000; // 15 seconds
 	public static final int STATE_UPDATE_INTERVAL_MS = 250; // 250 milliseconds;
 	public static final int MAX_INSTRUCTIONS = 50;
+	public static final int TOTAL_LEVEL_COUNT = 1;
 	public static final int[][] MOVE_VECTORS = new int[][] {{0, -1}, {1, 0}, {0, 1}, {-1, 0}};
 
 	private class Client {
@@ -39,6 +40,7 @@ public class GameServer extends WebSocketServer {
 			initialState = new GameState(level);
 			clients[0].socket.send("start:0");
 			clients[1].socket.send("start:1");
+			sendGameState(initialState);
 			simThread.start();
 		}
 
@@ -70,6 +72,36 @@ public class GameServer extends WebSocketServer {
 			}
 		}
 
+		public void sendGameState(GameState currentState) {
+			// Send new state
+			StringBuilder sb = new StringBuilder();
+			sb.append("{\"state\":[");
+			for (int y = 0; y < currentState.height; ++y) {
+				if (y > 0) {
+					sb.append(",");
+				}
+				sb.append("[");
+				ArrayList<ArrayList<GameObject>> row = currentState.level.get(y);
+				for (int x = 0; x < row.size(); ++x) {
+					ArrayList<GameObject> tile = row.get(x);
+					if (x > 0) {
+						sb.append(",");
+					}
+					sb.append("[");
+					for (int i = 0; i < tile.size(); ++i) {
+						if (i > 0) {
+							sb.append(",");
+						}
+						tile.get(i).appendToSB(sb);
+					}
+					sb.append("]");
+				}
+				sb.append("]");
+			}
+			sb.append("]}");
+			dualSend(sb.toString());
+		}
+		
 		public Thread simThread = new Thread(new Runnable() {
 			@Override
 			public void run() {
@@ -84,7 +116,6 @@ public class GameServer extends WebSocketServer {
 
 								// Update
 								GameState newState = (GameState) currentState.clone();
-								newState.commandIndex += 1;
 								int[][] playerCoords = new int[2][2];
 								int y = 0;
 								for (ArrayList<ArrayList<GameObject>> row : newState.level) {
@@ -159,35 +190,9 @@ public class GameServer extends WebSocketServer {
 										}
 									}
 								}
+								newState.commandIndex += 1;
 								currentState = newState;
-
-								// Send new state
-								StringBuilder sb = new StringBuilder();
-								sb.append("{\"state\":[");
-								for (y = 0; y < currentState.height; ++y) {
-									if (y > 0) {
-										sb.append(",");
-									}
-									sb.append("[");
-									ArrayList<ArrayList<GameObject>> row = currentState.level.get(y);
-									for (int x = 0; x < row.size(); ++x) {
-										ArrayList<GameObject> tile = row.get(x);
-										if (x > 0) {
-											sb.append(",");
-										}
-										sb.append("[");
-										for (int i = 0; i < tile.size(); ++i) {
-											if (i > 0) {
-												sb.append(",");
-											}
-											tile.get(i).appendToSB(sb);
-										}
-										sb.append("]");
-									}
-									sb.append("]");
-								}
-								sb.append("]}");
-								dualSend(sb.toString());
+								sendGameState(currentState);
 								if (levelWon) {
 									// Notify for win condition
 									terminate("You won!");
@@ -339,7 +344,7 @@ public class GameServer extends WebSocketServer {
 									id = new Integer(r.nextInt(Integer.MAX_VALUE)).toString();
 								} while (gameSessionByID.containsKey(id));
 								session.id = id;
-								session.level = 0;
+								session.level = new Random().nextInt(TOTAL_LEVEL_COUNT);
 								session.clients = new Client[] { client1, client2 };
 								client1.session = session;
 								client2.session = session;
