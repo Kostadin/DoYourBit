@@ -156,12 +156,22 @@ body{
 	display: none;
 }
 
-#stats {
+#commands {
 	position: relative;
-	top: -15px;
-	left: 50px;
+	/* top: -15px; */
+	/* left: 50px; */
 	display: block;
 	text-align: left;
+}
+
+#commands button {
+	height: 70px;
+	font-size: 26px;
+	margin: 10px;
+}
+
+#chat {
+	padding: 10px;
 }
 
 #healthbar {

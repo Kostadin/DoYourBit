@@ -6,16 +6,16 @@
 <script type="text/javascript" src="js/pixi.js"></script>
 <!-- <script type="text/javascript" src="js/sounds.js"></script> -->
 <script type="text/javascript" src="js/util.js"></script>
-<!-- <script type="text/javascript" src="js/global.js"></script> -->
-<!-- <script type="text/javascript" src="levels/level0.js"></script> -->
+<script type="text/javascript" src="js/global.js"></script>
+<script type="text/javascript" src="levels/level0.js"></script>
 <!-- <script type="text/javascript" src="levels/level1.js"></script> -->
-<!-- <script type="text/javascript" src="js/levelLoader.js"></script> -->
+<script type="text/javascript" src="js/levelLoader.js"></script>
 <script type="text/javascript" src="js/renderer.js"></script>
 <script type="text/javascript" src="js/input.js"></script>
 <script type="text/javascript">
 $(function() {
     // loadAnimations();
-	$('#btnPlay').click(function(){ startGame(0); });
+	$('#btnPlay').click(function(){ startGame(); });
 	var credits = ['Kostadin Vodenicharov - Dev', 'Nayden Pendov - Dev'];
 	shuffle(credits);
 	var logstr = 'Credits\n-------\n';
@@ -67,13 +67,13 @@ $(function() {
 				<!-- </div> -->
 			</div>
 			<div id="level" class="gameScreen" style="display:none;"></div>
-			<div id="stats" style="display: none;">
-					<!-- <div id="healthbar">HP</div> -->
-					<!-- <div id="money"></div> -->
-					<!-- <span id="tower1" class="towerUI">Plasma tower (Q) - 100 gold</span> -->
-					<!-- <span id="tower2" class="towerUI">Laser tower (W) - 500 gold</span> -->
-					<!-- <span id="tower3" class="towerUI">Granade tower (E) - 250 gold</span> -->
-					<!-- <span id="destroyTower" class="towerUI">Destroy (D) + half tower price</span> -->
+			<div id="commands" style="display: none;">
+				<button id="btn_left">turn left</button>
+				<button id="btn_right">turn right</button>
+				<button id="btn_move">move</button>
+				<button id="btn_wait">wait</button>
+				<button id="btn_submit">submit</button>
+				<div id="chat"><input type="text" size="120" maxlength="120" id="chat"></input></div>
 			</div>
 			<div id="gameOver" class="gameScreen" style="display:none;">
 			</div>
