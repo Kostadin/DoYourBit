@@ -137,8 +137,10 @@ public class GameState implements Cloneable {
 				for (GameObject gameObj : tile) {
 					if (gameObj instanceof GameDoor) {
 						GameDoor door = (GameDoor) gameObj;
-						door.passable = !door.passable;
-						door.deadly = !door.deadly;
+						if (door.triggerId == triggerId) {
+							door.passable = !door.passable;
+							door.deadly = !door.deadly;
+						}
 					}
 				}
 			}

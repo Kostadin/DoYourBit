@@ -103,6 +103,7 @@ function startGame() {
 				$('#btn_submit').hide();
 				$('#btn_stop').show();
 			} else if (event.data == 'sim:stopped'){
+				$('#line1').text('Simulation stopped. Awaiting commands...');
 				console.log(event.data);
 				$('#btn_submit').show();
 				$('#btn_stop').hide();
