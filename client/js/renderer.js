@@ -1,3 +1,5 @@
+var socket = null;
+
 function renderInit() {
 	app = new PIXI.Application(1280, 720);
 	$('#mainMenu').after(app.view);
@@ -20,14 +22,39 @@ function startGame() {
 
 
 	// WebSocket
-	const socket = new WebSocket('ws://localhost:8080');
+	socket = new WebSocket('ws://192.168.0.122:4420');
 	var socket_err = false;
 	socket.addEventListener('open', (event) => {
-    		socket.send(JSON.stringify({"command": "login"}));
+    		socket.send("client");
 	});
 
 	socket.addEventListener('message', (event) => {
     		console.log('Message from server ', event.data);
+			if (event.data == 'hb'){
+			} else if (event.data == 'client:OK'){
+				console.log(event.data);
+				socket.send('queue');
+			} else if (event.data == 'queue:OK'){
+				console.log('Queueing...')
+			} else if (event.data.indexOf('start:')===0){
+				console.log('Game starting...');
+				socket.send('submit\n0\n1\n2\n3');
+			} else if (event.data == 'submit:OK'){
+				console.log('Program submission accepted.');
+				socket.send('simStart');
+			} else if (event.data == 'simStart:OK'){
+				console.log(event.data);
+			} else if (event.data == 'simStop:OK'){
+				console.log(event.data);
+			} else if (event.data == 'sim:started'){
+				console.log(event.data);
+			} else if (event.data == 'sim:stopped'){
+				console.log(event.data);
+			} else if (event.data.indexOf('termination:')===0){
+				console.log(event.data);
+			} else if (event.data.indexOf('{')===0){
+				var level = JSON.parse(event.data);				
+			}
 	});
 
 	socket.addEventListener('error', (error) => {
@@ -104,7 +131,7 @@ function update_stage(array) {
 	app.stage.addChild(array.background);
 	for (let i = 0; i < 10; i++){
 		let position = TILE_WIDTH * i;
-		console.log(position);
+		// console.log(position);
 		let tile = new PIXI.Sprite(array.wall);
 		tile.anchor.set(0);
 		tile.width = TILE_WIDTH;

@@ -42,9 +42,11 @@ public class GameState implements Cloneable {
 						for (JsonElement elem : tileArray) {
 							tile.add(parseDefinition(definition.get(elem.getAsString())));
 						}
+						levelRow.add(tile);
 					} else {
 						ArrayList<GameObject> tile = new ArrayList<GameObject>(1);
 						tile.add(parseDefinition(definition.get(rowTile.getAsString())));
+						levelRow.add(tile);
 					}
 				}
 				level.add(levelRow);
@@ -147,7 +149,7 @@ public class GameState implements Cloneable {
 		GameState clone = new GameState(levelId, width, height, commandIndex);
 		if (level != null) {
 			clone.level = new ArrayList<ArrayList<ArrayList<GameObject>>>(level.size());
-			for (ArrayList<ArrayList<GameObject>> originalRow : clone.level) {
+			for (ArrayList<ArrayList<GameObject>> originalRow : level) {
 				ArrayList<ArrayList<GameObject>> clonedRow = new ArrayList<ArrayList<GameObject>>(originalRow.size());
 				for (ArrayList<GameObject> originalTile : originalRow) {
 					ArrayList<GameObject> clonedTile = new ArrayList<GameObject>();
