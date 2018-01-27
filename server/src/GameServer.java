@@ -39,6 +39,7 @@ public class GameServer extends WebSocketServer {
 			initialState = new GameState(level);
 			clients[0].socket.send("start:0");
 			clients[1].socket.send("start:1");
+			simThread.start();
 		}
 
 		public void terminate(String reason) {
@@ -103,8 +104,10 @@ public class GameServer extends WebSocketServer {
 								}
 								boolean levelWon = false;
 								boolean levelLost = false;
+								boolean noMoreCommands = false;
 								if ((newState.commandIndex >= clients[0].instructions.length)
 										&& (newState.commandIndex >= clients[1].instructions.length)) {
+									noMoreCommands = true;
 									// Check for win condition
 									if (newState.isGoal(playerCoords[0][0], playerCoords[0][1])
 											&& newState.isGoal(playerCoords[1][0], playerCoords[1][1])) {
@@ -133,6 +136,7 @@ public class GameServer extends WebSocketServer {
 															newState.checkAndTrigger(coords[0], coords[1]);
 															newState.level.get(coords[1]).get(coords[0]).remove(player);
 															newState.level.get(newCoords[1]).get(newCoords[0]).add(player);
+															playerCoords[playerId] = newCoords;
 															newState.checkAndTrigger(newCoords[0], newCoords[1]);
 														}
 													}
@@ -168,6 +172,9 @@ public class GameServer extends WebSocketServer {
 									ArrayList<ArrayList<GameObject>> row = currentState.level.get(y);
 									for (int x = 0; x < row.size(); ++x) {
 										ArrayList<GameObject> tile = row.get(x);
+										if (x > 0) {
+											sb.append(",");
+										}
 										sb.append("[");
 										for (int i = 0; i < tile.size(); ++i) {
 											if (i > 0) {
@@ -184,9 +191,12 @@ public class GameServer extends WebSocketServer {
 								if (levelWon) {
 									// Notify for win condition
 									terminate("You won!");
-								}
-								if (levelLost) {
+								} else if (levelLost) {
 									// Notify for loss condition
+									simStarted = false;
+									dualSend("sim:stopped");
+								} else if (noMoreCommands) {
+									// Notify that there are no more commands to execute
 									simStarted = false;
 									dualSend("sim:stopped");
 								}
@@ -194,7 +204,8 @@ public class GameServer extends WebSocketServer {
 						}
 						Thread.sleep(STATE_UPDATE_INTERVAL_MS);
 					} catch (Exception ex) {
-						// Ignore
+						System.err.println(ex.getMessage());
+						ex.printStackTrace(System.err);
 					}
 				}
 			}
@@ -297,7 +308,7 @@ public class GameServer extends WebSocketServer {
 						}
 					}
 					if (sendConfirmation) {
-						socket.send("client:" + lines[0]);
+						socket.send("client:OK");
 						System.out.println(lines[0]);
 					}
 				} else if (lines[0].equals("queue")) {
