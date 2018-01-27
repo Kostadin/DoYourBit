@@ -90,7 +90,7 @@ function startGame() {
 				console.log(event.data);
 				console.log('Game starting...');
 				$('#gameplay_controls').show();
-				socket.send('submit\n0\n1\n2\n3');
+				//socket.send('submit\n0\n1\n2\n3');
 			} else if (event.data == 'submit:OK'){
 				console.log('Program submission accepted.');
 				socket.send('simStart');
@@ -111,7 +111,7 @@ function startGame() {
 				alert(event.data.substring(12, event.data.length));
 				location.reload();
 			} else if (event.data.indexOf('{')===0){
-				console.log(event.data);
+				//console.log(event.data);
 				var level = JSON.parse(event.data);
 				update_stage(level);
 			}
