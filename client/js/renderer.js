@@ -22,7 +22,7 @@ function startGame() {
 
 
 	// WebSocket
-	socket = new WebSocket('ws://192.168.0.122:4420');
+	socket = new WebSocket('ws://127.0.0.1:4420');
 	var socket_err = false;
 	socket.addEventListener('open', (event) => {
     		socket.send("client");
@@ -53,7 +53,8 @@ function startGame() {
 			} else if (event.data.indexOf('termination:')===0){
 				console.log(event.data);
 			} else if (event.data.indexOf('{')===0){
-				var level = JSON.parse(event.data);				
+				var level = JSON.parse(event.data);
+				update_stage(level);
 			}
 	});
 
@@ -122,22 +123,52 @@ function startGame() {
 	background.width = 1280;
 	background.height = 720;
 	background.anchor.set(0);
+	tiles.background = background;
 	let wall = PIXI.Texture.fromImage("assets/wall1.png");
-	update_stage({background: background, wall: wall});
+	tiles.wall = [wall, wall];
+	let ground = PIXI.Texture.fromImage("assets/ground1.png");
+	tiles.ground = [ground, ground];
+	let door = PIXI.Texture.fromImage("assets/door1.png");
+	tiles.door = [door, door];
+	let plate = PIXI.Texture.fromImage("assets/plate1.png");
+	tiles.plate = [plate, plate];
+	let player1 = PIXI.Texture.fromImage("assets/player1.png");
+	let player2 = PIXI.Texture.fromImage("assets/player2.png");
+	tiles.player = [player1, player2];
+	let exit = PIXI.Texture.fromImage("assets/exit1.png");
+	tiles.player = [exit, exit];
 }
 
-function update_stage(array) {
-	// app.stage.removeChildren();
-	app.stage.addChild(array.background);
-	for (let i = 0; i < 10; i++){
-		let position = TILE_WIDTH * i;
+var tiles = Object();
+var tile_types = ["floor", "wall", "door", "plate", "exit", "player"];
+
+function update_stage(level) {
+	app.stage.removeChildren();
+	level.state.forEach((row, y) => {
+		//console.log(row);
+		row.forEach((obj, x) =>{
+			console.log("%s %s %s %s", JSON.stringify(obj[0]), x, y, tile_types[obj[0][0]]);
+			// let texture = tiles[tile_types[obj[0]]][0];
+			// console.log(texture);
+			// let tile = new PIXI.Sprite(texture);
+			// tile.anchor.set(0);
+			// tile.width = TILE_WIDTH;
+			// tile.height = TILE_HEIGHT;
+			// tile.position.x = TILE_WIDTH * x;
+			// tile.position.y = TILE_HEIGHT * y;
+			// app.stage.addChild(tile);
+		});
+	});
+	// app.stage.addChild(array.background);
+	// for (let i = 0; i < 10; i++){
+	// 	let position = TILE_WIDTH * i;
 		// console.log(position);
-		let tile = new PIXI.Sprite(array.wall);
-		tile.anchor.set(0);
-		tile.width = TILE_WIDTH;
-		tile.height = TILE_HEIGHT;
-		tile.position.x = position;
-		app.stage.addChild(tile);
-	}
+	// 	let tile = new PIXI.Sprite(array.wall);
+	// 	tile.anchor.set(0);
+	// 	tile.width = TILE_WIDTH;
+	// 	tile.height = TILE_HEIGHT;
+	// 	tile.position.x = position;
+	// 	app.stage.addChild(tile);
+	// }
 	//app.stage.addChild(wall);
 }
