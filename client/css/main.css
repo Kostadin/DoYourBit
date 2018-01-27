@@ -170,6 +170,11 @@ body{
 	margin: 10px;
 }
 
+#command_log {
+	display:none;
+	float:right;
+}
+
 #chat {
 	padding: 10px;
 }
