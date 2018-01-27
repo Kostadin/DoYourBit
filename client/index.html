@@ -3,6 +3,7 @@
 <title>Do Your Bit</title>
 <link rel="stylesheet" type="text/css" href="css/main.css"/>
 <script type="text/javascript" src="js/jquery-2.2.0.min.js"></script>
+<script type="text/javascript" src="js/jquery-ui.min.js"></script>
 <script type="text/javascript" src="js/pixi.js"></script>
 <!-- <script type="text/javascript" src="js/sounds.js"></script> -->
 <script type="text/javascript" src="js/util.js"></script>
@@ -48,6 +49,18 @@ $(function() {
 				<div class="button" id="btnCredits">Credits</div>
 				<div class="button" id="btnResume">Resume</div>
 			</div>
+			<div id="gameplay_controls" style="display:none;">
+				<div id="command_log"></div>
+				<div id="commands" style="display: none;">
+					<button id="btn_left" class="game_button">&#x21B6;</button>
+					<button id="btn_right" class="game_button">&#x21B7;</button>
+					<button id="btn_move" class="game_button">&#x2191;</button>
+					<button id="btn_wait" class="game_button">.</button>
+					<button id="btn_submit" class="game_button">GO</button>
+					<button id="btn_stop" class="game_button" style="display:none;">!</button>
+					<div id="chat" style="display:none;"><input type="text" id="chat"></input></div>
+				</div>
+			</div>
 			<div id="credits" class="gameScreen" style="display:none;">
 				<div id="creditsTitle">
 					Credits
@@ -67,17 +80,6 @@ $(function() {
 				<!-- </div> -->
 			</div>
 			<div id="level" class="gameScreen" style="display:none;"></div>
-			<div id="command_log"></div>
-			<div id="commands" style="display: none;">
-				<button id="btn_left">turn left</button>
-				<button id="btn_right">turn right</button>
-				<button id="btn_move">move</button>
-				<button id="btn_wait">wait</button>
-				<button id="btn_submit">submit</button>
-				<div id="chat"><input type="text" size="120" maxlength="120" id="chat"></input></div>
-			</div>
-			<div id="gameOver" class="gameScreen" style="display:none;">
-			</div>
 			<div id="youWin" style="display:none;">
 				YOU WIN
 			</div>
