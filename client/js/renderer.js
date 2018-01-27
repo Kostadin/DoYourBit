@@ -103,10 +103,16 @@ function startGame() {
 				console.log(event.data);
 			} else if (event.data == 'sim:started'){
 				console.log(event.data);
+				$('#btn_submit').hide();
+				$('#btn_stop').show();
 			} else if (event.data == 'sim:stopped'){
 				console.log(event.data);
+				$('#btn_submit').show();
+				$('#btn_stop').hide();
 			} else if (event.data.indexOf('termination:')===0){
 				console.log(event.data);
+				alert(event.data.substring(12, event.data.length));
+				location.reload();
 			} else if (event.data.indexOf('{')===0){
 				var level = JSON.parse(event.data);				
 			}

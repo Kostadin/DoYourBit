@@ -118,7 +118,7 @@ public class GameServer extends WebSocketServer {
 									// Execute commands
 									for (int playerId = 0; playerId<2; ++playerId) {
 										Client c = clients[playerId];
-										if (c.instructions.length<newState.commandIndex) { // We have commands to execute
+										if (c.instructions.length>newState.commandIndex) { // We have commands to execute
 											int[] coords = playerCoords[playerId];
 											GameOp op = c.instructions[newState.commandIndex];
 											switch(op) {
@@ -191,14 +191,17 @@ public class GameServer extends WebSocketServer {
 								if (levelWon) {
 									// Notify for win condition
 									terminate("You won!");
+									currentState = null;
 								} else if (levelLost) {
 									// Notify for loss condition
 									simStarted = false;
 									dualSend("sim:stopped");
+									currentState = null;
 								} else if (noMoreCommands) {
 									// Notify that there are no more commands to execute
 									simStarted = false;
 									dualSend("sim:stopped");
+									currentState = null;
 								}
 							}
 						}
