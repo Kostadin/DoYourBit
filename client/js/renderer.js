@@ -202,7 +202,7 @@ function startGame() {
 	tiles.plate = [plate, plate];
 	let player1 = PIXI.Texture.fromImage("assets/player1.png");
 	let player2 = PIXI.Texture.fromImage("assets/player2.png");
-	tiles.player = [player1, player2];
+	tiles.player = [[player1, player1, player1, player1], [player2, player2, player2, player2]];
 	let exit = PIXI.Texture.fromImage("assets/exit1.png");
 	tiles.exit = [exit, exit];
 }
@@ -220,7 +220,13 @@ function update_stage(level) {
 			for (var idx=0;idx<tile.length;++idx){
 				var obj = tile[idx];
 				//console.log("%s %s %s %s", JSON.stringify(obj[0]), x, y, tile_types[obj[0]]);
-				let texture = tiles[tile_types[obj[0]]][0];
+				let texture;
+				if (obj[0] == 5) {
+					texture = tiles[tile_types[obj[0]]][obj[1]][obj[2]];
+				}
+				else {
+					texture = tiles[tile_types[obj[0]]][obj[1]];
+				}
 				//console.log(texture);
 				let tileSprite = new PIXI.Sprite(texture);
 				tileSprite.anchor.set(0);
