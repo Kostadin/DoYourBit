@@ -3,12 +3,11 @@ public class GameDoor extends GameObject {
 	public GameDoor(boolean closed, int triggerId) {
 		this.triggerId = triggerId;
 		passable = !closed;
-		deadly = true;
+		deadly = closed;
 	}
 	
 	public Object clone() {
 		GameDoor copy = new GameDoor(!passable, triggerId);
-		copy.deadly = deadly;
 		return copy;
 	}
 	

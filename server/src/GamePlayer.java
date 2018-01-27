@@ -3,7 +3,7 @@ public class GamePlayer extends GameObject {
 	public PlayerDirection direction;
 	public GamePlayer(int playerId) {		
 		this.playerId = playerId;
-		passable = false;
+		passable = true;
 		deadly = false;
 		direction = PlayerDirection.UP;
 	}

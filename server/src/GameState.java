@@ -2,20 +2,23 @@ import java.io.*;
 import java.util.*;
 import com.google.gson.*;
 
-public class GameState implements Cloneable{
+public class GameState implements Cloneable {
 	public int levelId;
 	public int width;
 	public int height;
+	public int commandIndex;
 	public ArrayList<ArrayList<ArrayList<GameObject>>> level; // y, x, objects
 
-	private GameState(int levelId, int width, int height) {
+	private GameState(int levelId, int width, int height, int commandIndex) {
 		this.levelId = levelId;
 		this.width = width;
 		this.height = height;
+		this.commandIndex = commandIndex;
 	}
-	
+
 	public GameState(int levelId) {
 		this.levelId = levelId;
+		this.commandIndex = 0;
 		try {
 			JsonObject jsonLevel = new JsonParser().parse(new FileReader("levels/level" + levelId + ".json"))
 					.getAsJsonObject();
@@ -74,9 +77,74 @@ public class GameState implements Cloneable{
 		}
 		return null;
 	}
-	
+
+	public boolean isPassable(int x, int y) {
+		ArrayList<GameObject> tile = level.get(y).get(x);
+		boolean passable = true;
+		for (GameObject gameObj : tile) {
+			passable &= gameObj.passable;
+		}
+		return passable;
+	}
+
+	public boolean isDeadly(int x, int y) {
+		ArrayList<GameObject> tile = level.get(y).get(x);
+		boolean deadly = false;
+		for (GameObject gameObj : tile) {
+			deadly |= gameObj.deadly;
+		}
+		return deadly;
+	}
+
+	public boolean isGoal(int x, int y) {
+		ArrayList<GameObject> tile = level.get(y).get(x);
+		boolean goal = false;
+		for (GameObject gameObj : tile) {
+			goal |= (gameObj instanceof GameGoal);
+		}
+		return goal;
+	}
+
+	public GamePlayer getPlayer(int x, int y, int playerId) {
+		ArrayList<GameObject> tile = level.get(y).get(x);
+		for (GameObject gameObj : tile) {
+			if (gameObj instanceof GamePlayer) {
+				GamePlayer player = (GamePlayer) gameObj;
+				if (player.playerId == playerId) {
+					return player;
+				}
+			}
+		}
+		return null;
+	}
+
+	public void checkAndTrigger(int x, int y) {
+		ArrayList<GameObject> tile = level.get(y).get(x);
+		for (GameObject gameObj : tile) {
+			if (gameObj instanceof GameButtonPlatform) {
+				GameButtonPlatform button = (GameButtonPlatform) gameObj;
+				notifyTriggerSubscribers(button.triggerId);
+			}
+		}
+
+	}
+
+	public void notifyTriggerSubscribers(int triggerId) {
+		for (ArrayList<ArrayList<GameObject>> row : level) {
+			for (ArrayList<GameObject> tile : row) {
+				for (GameObject gameObj : tile) {
+					if (gameObj instanceof GameDoor) {
+						GameDoor door = (GameDoor) gameObj;
+						door.passable = !door.passable;
+						door.deadly = !door.deadly;
+					}
+				}
+			}
+		}
+	}
+
 	public Object clone() {
-		GameState clone = new GameState(levelId, width, height);
+		GameState clone = new GameState(levelId, width, height, commandIndex);
 		if (level != null) {
 			clone.level = new ArrayList<ArrayList<ArrayList<GameObject>>>(level.size());
 			for (ArrayList<ArrayList<GameObject>> originalRow : clone.level) {
@@ -84,7 +152,7 @@ public class GameState implements Cloneable{
 				for (ArrayList<GameObject> originalTile : originalRow) {
 					ArrayList<GameObject> clonedTile = new ArrayList<GameObject>();
 					for (GameObject gameObj : originalTile) {
-						clonedTile.add((GameObject)gameObj.clone());
+						clonedTile.add((GameObject) gameObj.clone());
 					}
 					clonedRow.add(clonedTile);
 				}

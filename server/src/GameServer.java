@@ -13,9 +13,10 @@ import org.java_websocket.server.WebSocketServer;
 public class GameServer extends WebSocketServer {
 	public static final int HEARTBEAT_INTERVAL_MS = 15000; // 15 seconds
 	public static final int STATE_UPDATE_INTERVAL_MS = 250; // 250 milliseconds;
+	public static final int MAX_INSTRUCTIONS = 50;
+	public static final int[][] MOVE_VECTORS = new int[][] {{0, -1}, {1, 0}, {0, 1}, {-1, 0}};
 
 	private class Client {
-		public String nickname;
 		public WebSocket socket;
 		public GameSession session;
 		public GameOp[] instructions;
@@ -79,13 +80,87 @@ public class GameServer extends WebSocketServer {
 								if (currentState == null) {
 									currentState = (GameState) initialState.clone();
 								}
-								
+
 								// Update
-								
+								GameState newState = (GameState) currentState.clone();
+								newState.commandIndex += 1;
+								int[][] playerCoords = new int[2][2];
+								int y = 0;
+								for (ArrayList<ArrayList<GameObject>> row : newState.level) {
+									int x = 0;
+									for (ArrayList<GameObject> tile : row) {
+										for (GameObject gameObj : tile) {
+											if (gameObj instanceof GamePlayer) {
+												GamePlayer p = (GamePlayer) gameObj;
+												int idx = p.playerId;
+												playerCoords[idx][0] = x;
+												playerCoords[idx][1] = y;
+											}
+										}
+										++x;
+									}
+									++y;
+								}
+								boolean levelWon = false;
+								boolean levelLost = false;
+								if ((newState.commandIndex >= clients[0].instructions.length)
+										&& (newState.commandIndex >= clients[1].instructions.length)) {
+									// Check for win condition
+									if (newState.isGoal(playerCoords[0][0], playerCoords[0][1])
+											&& newState.isGoal(playerCoords[1][0], playerCoords[1][1])) {
+										levelWon = true;
+									}
+								}
+								if (!levelWon) {
+									// Execute commands
+									for (int playerId = 0; playerId<2; ++playerId) {
+										Client c = clients[playerId];
+										if (c.instructions.length<newState.commandIndex) { // We have commands to execute
+											int[] coords = playerCoords[playerId];
+											GameOp op = c.instructions[newState.commandIndex];
+											switch(op) {
+												case WAIT:
+													// Do nothing
+													break;
+												case MOVE:
+													GamePlayer player = newState.getPlayer(coords[0], coords[1], playerId);
+													int[] moveDelta = MOVE_VECTORS[player.direction.ordinal()];
+													int[] newCoords = new int[] {coords[0]+moveDelta[0], coords[1]+moveDelta[1]};
+													// Check for move validity
+													if ((newCoords[1]>=0)&&(newCoords[1]<newState.level.size()&&(newCoords[0]>=0)&&(newCoords[0]<newState.level.get(newCoords[1]).size()))) {
+														// Valid coords
+														if (newState.isPassable(newCoords[0], newCoords[1])) {
+															newState.checkAndTrigger(coords[0], coords[1]);
+															newState.level.get(coords[1]).get(coords[0]).remove(player);
+															newState.level.get(newCoords[1]).get(newCoords[0]).add(player);
+															newState.checkAndTrigger(newCoords[0], newCoords[1]);
+														}
+													}
+													break;
+												case ROTATE_LEFT:
+													newState.getPlayer(coords[0], coords[1], playerId).rotateLeft();
+													break;
+												case ROTATE_RIGHT:
+													newState.getPlayer(coords[0], coords[1], playerId).rotateRight();
+													break;
+											}
+										}
+									}
+									// Check for deadly scenario
+									for (int playerId = 0; playerId<2; ++playerId) {
+										int[] coords = playerCoords[playerId];
+										if (newState.isDeadly(coords[0], coords[1])) {
+											levelLost = true;
+											break;
+										}
+									}
+								}
+								currentState = newState;
+
 								// Send new state
 								StringBuilder sb = new StringBuilder();
 								sb.append("{\"state\":[");
-								for (int y = 0; y < currentState.height; ++y) {
+								for (y = 0; y < currentState.height; ++y) {
 									if (y > 0) {
 										sb.append(",");
 									}
@@ -98,7 +173,7 @@ public class GameServer extends WebSocketServer {
 											if (i > 0) {
 												sb.append(",");
 											}
-											tile.get(i).appendToSB(sb);;
+											tile.get(i).appendToSB(sb);
 										}
 										sb.append("]");
 									}
@@ -106,6 +181,15 @@ public class GameServer extends WebSocketServer {
 								}
 								sb.append("]}");
 								dualSend(sb.toString());
+								if (levelWon) {
+									// Notify for win condition
+									terminate("You won!");
+								}
+								if (levelLost) {
+									// Notify for loss condition
+									simStarted = false;
+									dualSend("sim:stopped");
+								}
 							}
 						}
 						Thread.sleep(STATE_UPDATE_INTERVAL_MS);
@@ -200,12 +284,11 @@ public class GameServer extends WebSocketServer {
 			System.out.println(socket + ": " + message);
 			String[] lines = message.split("\n");
 			if (lines.length > 0) {
-				if (lines[0].equals("client") && lines.length >= 2) {
+				if (lines[0].equals("client")) {
 					boolean sendConfirmation = false;
 					synchronized (registerLock) {
 						if (unidentifiedSockets.contains(socket)) {
 							Client c = new Client();
-							c.nickname = lines[1];
 							c.socket = socket;
 							unidentifiedSockets.remove(socket);
 							clientBySocket.put(socket, c);
@@ -216,8 +299,6 @@ public class GameServer extends WebSocketServer {
 					if (sendConfirmation) {
 						socket.send("client:" + lines[0]);
 						System.out.println(lines[0]);
-						System.out.println(lines[1]);
-						// System.out.println(lines[2]);
 					}
 				} else if (lines[0].equals("queue")) {
 					boolean sendConfirmation = false;
@@ -256,7 +337,7 @@ public class GameServer extends WebSocketServer {
 							session.start();
 						}
 					}
-				} else if (lines[0].equals("start")) {
+				} else if (lines[0].equals("simStart")) {
 					Client client = null;
 					boolean startOK = false;
 					synchronized (registerLock) {
@@ -277,7 +358,7 @@ public class GameServer extends WebSocketServer {
 						}
 					}
 					if (startOK) {
-						client.socket.send("start:OK");
+						client.socket.send("simStart:OK");
 						boolean didSimStart = false;
 						synchronized (client.session.lock) {
 							if ((!client.session.simStarted) && client.session.startVotes[0]
@@ -292,7 +373,7 @@ public class GameServer extends WebSocketServer {
 							client.session.dualSend("sim:started");
 						}
 					}
-				} else if (lines[0].equals("stop")) {
+				} else if (lines[0].equals("simStop")) {
 					Client client = null;
 					boolean stopOK = false;
 					synchronized (registerLock) {
@@ -323,7 +404,7 @@ public class GameServer extends WebSocketServer {
 								didSimStop = true;
 							}
 						}
-						client.socket.send("stop:OK");
+						client.socket.send("simStop:OK");
 						if (didSimStop) {
 							client.session.dualSend("sim:stopped");
 						}
@@ -339,7 +420,8 @@ public class GameServer extends WebSocketServer {
 							if (client.session.simStarted == false) {
 								GameOp[] newInstructions = new GameOp[lines.length - 1];
 								int j = 0;
-								for (int i = 0; i < lines.length; ++i) {
+								int inputLineCount = Math.min(lines.length - 1, MAX_INSTRUCTIONS);
+								for (int i = 0; i < inputLineCount; ++i) {
 									try {
 										int idx = Integer.parseInt(lines[i + 1]);
 										if ((idx >= 0) && (idx < gameOpValues.length)) {
