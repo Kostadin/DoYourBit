@@ -1,5 +1,3 @@
-var app;
-
 function renderInit() {
 	app = new PIXI.Application(1280, 720);
 	$('#mainMenu').after(app.view);
@@ -16,6 +14,10 @@ function moves_debug() {
 function startGame() {
 	$('#mainMenu').hide();
 	$('#commands').show();
+
+	const TILE_WIDTH = 64;
+	const TILE_HEIGHT = 64;
+
 
 	// WebSocket
 	const socket = new WebSocket('ws://localhost:8080');
@@ -89,9 +91,26 @@ function startGame() {
 
 	//Load Pixi stuff
 	renderInit();
-	var background = PIXI.Sprite.fromImage("assets/back.png");
+	let background = PIXI.Sprite.fromImage("assets/back.png");
 	background.width = 1280;
 	background.height = 720;
 	background.anchor.set(0);
-	app.stage.addChild(background);
+	let wall = PIXI.Texture.fromImage("assets/wall1.png");
+	update_stage({background: background, wall: wall});
+}
+
+function update_stage(array) {
+	// app.stage.removeChildren();
+	app.stage.addChild(array.background);
+	for (let i = 0; i < 10; i++){
+		let position = TILE_WIDTH * i;
+		console.log(position);
+		let tile = new PIXI.Sprite(array.wall);
+		tile.anchor.set(0);
+		tile.width = TILE_WIDTH;
+		tile.height = TILE_HEIGHT;
+		tile.position.x = position;
+		app.stage.addChild(tile);
+	}
+	//app.stage.addChild(wall);
 }
