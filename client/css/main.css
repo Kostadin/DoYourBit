@@ -15,8 +15,8 @@ body{
 
 #screen{
 	position:relative;
-	width:1280px;
-	height:720px;
+	width:960px;
+	height:640px;
 	margin-left:auto;
 	margin-right:auto;
 	background-color:black;
@@ -26,8 +26,8 @@ body{
 	position:absolute;
 	left:0px;
 	top:0px;
-	width:1280px;
-	height:720px;
+	width:960px;
+	height:640px;
 	z-index:100;
 	/* background-image: url('../assets/backgr.png'); */
 	background-repeat: no-repeat;
@@ -45,8 +45,8 @@ body{
 	position:absolute;
 	left:0px;
 	top:0px;
-	width:1280px;
-	height:720px;
+	width:640px;
+	height:640px;
 }
 
 #creditsTitle{
@@ -68,14 +68,14 @@ body{
 	color:white;
 	background-color:black;
 	text-align:center;
-	line-height:720px;
+	line-height:640px;
 }
 
 #instructions{
 	position:absolute;
 	left:0px;
 	top:400px;
-	width:1280px;
+	width:960px;
 	height:150px;
 }
 
@@ -85,7 +85,7 @@ body{
 	margin-left:auto;
 	margin-right:auto;
 	text-align:center;
-	color:grey;
+	color:#808080;
 	font-size:20px;
 	line-height:30px;
 }
@@ -97,7 +97,7 @@ body{
 	background-image:url('../assets/gameover.png');
 	background-repeat: no-repeat;
 	text-align:center;
-	line-height:720px;
+	line-height:640px;
 }
 
 #youWin{
@@ -106,7 +106,7 @@ body{
 	color:yellow;
 	background-color:black;
 	text-align:center;
-	line-height:720px;
+	line-height:640px;
 }
 
 #level{
@@ -157,22 +157,20 @@ body{
 }
 
 #commands {
-	position: relative;
-	/* top: -15px; */
-	/* left: 50px; */
+	position: absolute;
+	bottom: 0px;
+	left: 0px;
 	display: block;
 	text-align: left;
 }
 
-#commands button {
-	height: 70px;
-	font-size: 26px;
-	margin: 10px;
-}
-
 #command_log {
-	display:none;
-	float:right;
+	display:block;
+	width: 320px;
+	height: 576px;
+	overflow-y: auto;
+	overflow-x: hidden;
+	background: grey;
 }
 
 #chat {
@@ -200,4 +198,39 @@ body{
 #money::before{
 	content: "Gold: ";
 	color: white;
+}
+
+.game_button {
+	padding: 0px;
+	margin: 0px;
+	width: 60px;
+	height: 60px;
+	border: 1px solid black;
+	border-radius: 5px;
+	font-size: 26px;
+}
+
+canvas {
+	float: left;
+}
+
+#gameplay_controls {
+	position: relative;
+	float: left;
+	width: 320px;
+	height: 640px;
+}
+
+.single_command {
+	width: 318px;
+	height: 64px;
+	border: 1px solid black;
+	background: white;
+	line-height: 64px;
+	padding-left: 20px;
+	font-size: 32px;
+	-webkit-user-select: none; /* Safari */        
+	-moz-user-select: none; /* Firefox */
+	-ms-user-select: none; /* IE10+/Edge */
+	user-select: none; /* Standard */
 }

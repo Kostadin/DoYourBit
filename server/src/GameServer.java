@@ -264,6 +264,7 @@ public class GameServer extends WebSocketServer {
 				if (clientBySocket.containsKey(socket)) {
 					Client c = clientBySocket.get(socket);
 					clientBySocket.remove(socket);
+					matchMakingQueue.remove(c);
 					clients.remove(c);
 					if (c.session != null) {
 						if (c.session.clients[0] == c) {
