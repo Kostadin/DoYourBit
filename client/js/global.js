@@ -3,8 +3,8 @@ var renderer = null;
 var stage = null;
 
 var levels = [];
-var TILE_HEIGHT = 64;
-var TILE_WIDTH = 64;
+var TILE_HEIGHT = 32;
+var TILE_WIDTH = 32;
 var HALF_TILE_HEIGHT = TILE_HEIGHT/2.0;
 var HALF_TILE_WIDTH = TILE_WIDTH/2.0;
 

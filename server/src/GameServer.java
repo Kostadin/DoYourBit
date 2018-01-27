@@ -476,7 +476,7 @@ public class GameServer extends WebSocketServer {
 	}
 
 	public static void main(String[] args) throws InterruptedException, IOException {
-		WebSocketImpl.DEBUG = true;
+		//WebSocketImpl.DEBUG = true;
 		int port = 4420;
 		try {
 			port = Integer.parseInt(args[0]);

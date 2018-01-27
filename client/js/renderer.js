@@ -71,10 +71,6 @@ function startGame() {
 	$('#mainMenu').hide();
 	$('#commands').show();
 
-	const TILE_WIDTH = 32;
-	const TILE_HEIGHT = 32;
-
-
 	// WebSocket
 	socket = new WebSocket('ws://127.0.0.1:4420');
 	var socket_err = false;
@@ -83,7 +79,7 @@ function startGame() {
 	});
 
 	socket.addEventListener('message', (event) => {
-    		console.log('Message from server ', event.data);
+    		//console.log('Message from server ', event.data);
 			if (event.data == 'hb'){
 			} else if (event.data == 'client:OK'){
 				console.log(event.data);
@@ -91,6 +87,7 @@ function startGame() {
 			} else if (event.data == 'queue:OK'){
 				console.log('Queueing...')
 			} else if (event.data.indexOf('start:')===0){
+				console.log(event.data);
 				console.log('Game starting...');
 				$('#gameplay_controls').show();
 				socket.send('submit\n0\n1\n2\n3');
@@ -114,6 +111,7 @@ function startGame() {
 				alert(event.data.substring(12, event.data.length));
 				location.reload();
 			} else if (event.data.indexOf('{')===0){
+				console.log(event.data);
 				var level = JSON.parse(event.data);
 				update_stage(level);
 			}
@@ -206,29 +204,34 @@ function startGame() {
 	let player2 = PIXI.Texture.fromImage("assets/player2.png");
 	tiles.player = [player1, player2];
 	let exit = PIXI.Texture.fromImage("assets/exit1.png");
-	tiles.player = [exit, exit];
+	tiles.exit = [exit, exit];
 }
 
 var tiles = Object();
-var tile_types = ["floor", "wall", "door", "plate", "exit", "player"];
+var tile_types = ["ground", "wall", "door", "plate", "exit", "player"];
 
 function update_stage(level) {
 	app.stage.removeChildren();
-	level.state.forEach((row, y) => {
+	for (var y=0;y<level.state.length;++y){
+		var row = level.state[y];
 		//console.log(row);
-		row.forEach((obj, x) =>{
-			console.log("%s %s %s %s", JSON.stringify(obj[0]), x, y, tile_types[obj[0][0]]);
-			// let texture = tiles[tile_types[obj[0]]][0];
-			// console.log(texture);
-			// let tile = new PIXI.Sprite(texture);
-			// tile.anchor.set(0);
-			// tile.width = TILE_WIDTH;
-			// tile.height = TILE_HEIGHT;
-			// tile.position.x = TILE_WIDTH * x;
-			// tile.position.y = TILE_HEIGHT * y;
-			// app.stage.addChild(tile);
-		});
-	});
+		for (var x=0;x<row.length;++x){
+			var tile = row[x];
+			for (var idx=0;idx<tile.length;++idx){
+				var obj = tile[idx];
+				//console.log("%s %s %s %s", JSON.stringify(obj[0]), x, y, tile_types[obj[0]]);
+				let texture = tiles[tile_types[obj[0]]][0];
+				//console.log(texture);
+				let tileSprite = new PIXI.Sprite(texture);
+				tileSprite.anchor.set(0);
+				tileSprite.width = TILE_WIDTH;
+				tileSprite.height = TILE_HEIGHT;
+				tileSprite.position.x = TILE_WIDTH * x;
+				tileSprite.position.y = TILE_HEIGHT * y;
+				app.stage.addChild(tileSprite);
+			}
+		};
+	};
 	// app.stage.addChild(array.background);
 	// for (let i = 0; i < 10; i++){
 	// 	let position = TILE_WIDTH * i;
