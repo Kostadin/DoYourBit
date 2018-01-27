@@ -11,6 +11,9 @@ import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 
 public class GameServer extends WebSocketServer {
+	public static final int HEARTBEAT_INTERVAL_MS = 15000; // 15 seconds
+	public static final int STATE_UPDATE_INTERVAL_MS = 250; // 250 milliseconds;
+	
 	private class Client {
 		public String nickname;
 		public WebSocket socket;
@@ -25,6 +28,7 @@ public class GameServer extends WebSocketServer {
 		public boolean[] startVotes = new boolean[] { false, false };
 		public boolean[] stopVotes = new boolean[] { false, false };
 		public boolean simStarted;
+		public Object lock = new Object();
 
 		public void start() {
 			simStarted = false;
@@ -33,6 +37,9 @@ public class GameServer extends WebSocketServer {
 		}
 
 		public void terminate(String reason) {
+			synchronized (lock) {
+				simStarted = false;
+			}
 			synchronized (registerLock) {
 				gameSessionByID.remove(this.id);
 				sessions.remove(this);
@@ -48,11 +55,13 @@ public class GameServer extends WebSocketServer {
 	}
 
 	public enum GameOp {
-		WAIT,//0
-		MOVE,//1
-		ROTATE_LEFT,//2
-		ROTATE_RIGHT//3
+		WAIT, // 0
+		MOVE, // 1
+		ROTATE_LEFT, // 2
+		ROTATE_RIGHT// 3
 	}
+
+	private boolean sendHeartBeats = false;
 	private GameOp[] gameOpValues = GameOp.values();
 	private HashSet<Client> clients = new HashSet<Client>();
 	private ArrayList<Client> matchMakingQueue = new ArrayList<Client>();
@@ -65,6 +74,28 @@ public class GameServer extends WebSocketServer {
 	public GameServer(int port) throws UnknownHostException {
 		super(new InetSocketAddress(port));
 	}
+
+	private Thread heartBeatThread = new Thread(new Runnable() {
+		@Override
+		public void run() {
+			while (sendHeartBeats) {
+				try {
+					Client[] pingClients = null;
+					synchronized (registerLock) {
+						pingClients = clients.toArray(new Client[] {});
+					}
+					if ((pingClients != null)&&(pingClients.length>0)) {
+						for (int i=0;i<pingClients.length;++i) {
+							pingClients[i].socket.send("hb");
+						}
+					}
+					Thread.sleep(HEARTBEAT_INTERVAL_MS);
+				} catch (Exception ex) {
+					// Ignore
+				}
+			}
+		}
+	});
 
 	@Override
 	public void onClose(WebSocket socket, int arg1, String arg2, boolean arg3) {
@@ -170,13 +201,18 @@ public class GameServer extends WebSocketServer {
 				synchronized (registerLock) {
 					client = clientBySocket.get(socket);
 				}
-				if ((client != null) && (client.session != null) && (client.session.simStarted == false)) {
-					for (int i=0;i<2;++i) {
-						if (client.session.clients[i] == client) {
-							client.session.startVotes[i] = true;
-							startOK = true;
-							break;
+				if ((client != null) && (client.session != null)) {
+					synchronized (client.session.lock) {
+						if (client.session.simStarted == false) {
+							for (int i = 0; i < 2; ++i) {
+								if (client.session.clients[i] == client) {
+									client.session.startVotes[i] = true;
+									startOK = true;
+									break;
+								}
+							}
 						}
+
 					}
 				}
 				if (startOK) {
@@ -188,12 +224,16 @@ public class GameServer extends WebSocketServer {
 				synchronized (registerLock) {
 					client = clientBySocket.get(socket);
 				}
-				if ((client != null) && (client.session != null) && (client.session.simStarted == true)) {
-					for (int i=0;i<2;++i) {
-						if (client.session.clients[i] == client) {
-							client.session.stopVotes[i] = true;
-							stopOK = true;
-							break;
+				if ((client != null) && (client.session != null)) {
+					synchronized (client.session.lock) {
+						if (client.session.simStarted == true) {
+							for (int i = 0; i < 2; ++i) {
+								if (client.session.clients[i] == client) {
+									client.session.stopVotes[i] = true;
+									stopOK = true;
+									break;
+								}
+							}
 						}
 					}
 				}
@@ -206,18 +246,24 @@ public class GameServer extends WebSocketServer {
 				synchronized (registerLock) {
 					client = clientBySocket.get(socket);
 				}
-				if ((client != null) && (client.session != null) && (client.session.simStarted == false)) {
-					GameOp[] newInstructions = new GameOp[lines.length-1];
-					int j = 0;
-					for (int i=0;i<lines.length;++i) {
-						try {
-							int idx = Integer.parseInt(lines[i+1]);
-							if ((idx>=0)&&(idx<gameOpValues.length)) {
-								GameOp op = gameOpValues[idx];
-								newInstructions[j++] = op;
+				if ((client != null) && (client.session != null)) {
+					synchronized (client.session.lock) {
+						if (client.session.simStarted == false) {
+							GameOp[] newInstructions = new GameOp[lines.length - 1];
+							int j = 0;
+							for (int i = 0; i < lines.length; ++i) {
+								try {
+									int idx = Integer.parseInt(lines[i + 1]);
+									if ((idx >= 0) && (idx < gameOpValues.length)) {
+										GameOp op = gameOpValues[idx];
+										newInstructions[j++] = op;
+									}
+								} catch (Exception ex) {
+									// Ignored
+								}
 							}
-						} catch (Exception ex) {
-							// Ignored
+							client.instructions = newInstructions;
+							submitOK = true;
 						}
 					}
 				}
@@ -248,12 +294,15 @@ public class GameServer extends WebSocketServer {
 		}
 		GameServer s = new GameServer(port);
 		s.start();
+		s.sendHeartBeats = true;
+		s.heartBeatThread.start();
 		System.out.println("SignalServer started on port: " + s.getPort());
 		BufferedReader sysin = new BufferedReader(new InputStreamReader(System.in));
 		while (true) {
 			String in = sysin.readLine();
-			// s.sendToAll( in );
 			if (in.equals("exit")) {
+				s.sendHeartBeats = false;
+				s.heartBeatThread.interrupt();
 				s.stop();
 				break;
 			}
