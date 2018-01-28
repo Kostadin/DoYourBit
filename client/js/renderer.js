@@ -143,34 +143,30 @@ function startGame() {
 
 	// Input
 	document.getElementById('btn_left').addEventListener('click',function(event){
-		if((canModifyMoves)&&(moves_max > 0)){
+		if((canModifyMoves)&&(moves_max >= moves.length)){
 			moves.push(2);
-			moves_max--;
 			render_moves();
 			scroll_to_latest_command();
 		}
 		
 	});
 	document.getElementById('btn_right').addEventListener('click',function(event){
-		if((canModifyMoves)&&(moves_max > 0)){
+		if((canModifyMoves)&&(moves_max >= moves.length)){
 			moves.push(3);
-			moves_max--;
 			render_moves();
 			scroll_to_latest_command();
 		}
 	});
 	document.getElementById('btn_move').addEventListener('click',function(event){
-		if((canModifyMoves)&&(moves_max > 0)){
+		if((canModifyMoves)&&(moves_max >= moves.length)){
 			moves.push(1);
-			moves_max--;
 			render_moves();
 			scroll_to_latest_command();
 		}
 	});
 	document.getElementById('btn_wait').addEventListener('click',function(event){
-		if((canModifyMoves)&&(moves_max > 0)){
+		if((canModifyMoves)&&(moves_max >= moves.length)){
 			moves.push(0);
-			moves_max--;
 			render_moves();
 			scroll_to_latest_command();
 		}
