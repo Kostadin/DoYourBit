@@ -39,7 +39,7 @@
 		{
 			"type" : "door",
 			"closed" : false,
-			"truggerId" : 0
+			"triggerId" : 0
 		},
 		"C" : {
 			"type" : "door",
@@ -50,7 +50,7 @@
 		{
 			"type" : "door",
 			"closed" : false,
-			"truggerId" : 1
+			"triggerId" : 1
 		},
 		"b" : {
 			"type" : "button",
