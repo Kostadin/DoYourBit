@@ -208,7 +208,7 @@ function startGame() {
 	background.height = 640;
 	background.anchor.set(0);
 	tiles.background = background;
-	var wall = PIXI.Texture.fromImage("assets/wall1.png");
+	var wall = PIXI.Texture.fromImage("assets/wall.png");
 	tiles.wall = [wall, wall];
 	var ground = PIXI.Texture.fromImage("assets/ground1.png");
 	tiles.ground = [ground, ground];

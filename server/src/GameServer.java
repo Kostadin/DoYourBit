@@ -350,6 +350,8 @@ public class GameServer extends WebSocketServer {
 								gameSessionByID.put(id, session);
 								sessions.add(session);
 								startMatch = true;
+								matchMakingQueue.remove(1);
+								matchMakingQueue.remove(0);
 							}
 						}
 						if (startMatch) {
