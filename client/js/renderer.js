@@ -94,9 +94,9 @@ function startGame() {
 				canModifyMoves = true;
 				$('#line1').text('Game started. Awaiting commands...');
 				if (event.data==='start:0'){
-					$('#line2').text('Your robot is on the left.');
+					$('#line2').html('Your robot is the <span style="color:red;"><b>red</b></span> one on the left.');
 				} else if (event.data==='start:1'){
-					$('#line2').text('Your robot is on the right.');
+					$('#line2').html('Your robot is the <span style="color:#18a1e7;"><b>blue</b></span> one on the right.');
 				}
 				console.log(event.data);
 				console.log('Game starting...');
