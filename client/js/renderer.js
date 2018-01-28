@@ -75,11 +75,11 @@ function startGame() {
 	$('#line1').text('Connecting...');
 	socket = new WebSocket('ws://127.0.0.1:4420');
 	var socket_err = false;
-	socket.addEventListener('open', (event) => {
+	socket.addEventListener('open',function(event){
     		socket.send("client");
 	});
 
-	socket.addEventListener('message', (event) => {
+	socket.addEventListener('message',function(event){
     		//console.log('Message from server ', event.data);
 			if (event.data == 'hb'){
 			} else if (event.data == 'client:OK'){
@@ -138,11 +138,11 @@ function startGame() {
 		socket_err = true;
 	});
 	// let loop = Promise::new((resolve, reject) => {
-	// 	let level = []; // Init level data
+	// 	var level = []; // Init level data
 	// });
 
 	// Input
-	document.getElementById('btn_left').addEventListener('click', (event) => {
+	document.getElementById('btn_left').addEventListener('click',function(event){
 		if((canModifyMoves)&&(moves_max > 0)){
 			moves.push(2);
 			moves_max--;
@@ -151,7 +151,7 @@ function startGame() {
 		}
 		
 	});
-	document.getElementById('btn_right').addEventListener('click', (event) => {
+	document.getElementById('btn_right').addEventListener('click',function(event){
 		if((canModifyMoves)&&(moves_max > 0)){
 			moves.push(3);
 			moves_max--;
@@ -159,7 +159,7 @@ function startGame() {
 			scroll_to_latest_command();
 		}
 	});
-	document.getElementById('btn_move').addEventListener('click', (event) => {
+	document.getElementById('btn_move').addEventListener('click',function(event){
 		if((canModifyMoves)&&(moves_max > 0)){
 			moves.push(1);
 			moves_max--;
@@ -167,7 +167,7 @@ function startGame() {
 			scroll_to_latest_command();
 		}
 	});
-	document.getElementById('btn_wait').addEventListener('click', (event) => {
+	document.getElementById('btn_wait').addEventListener('click',function(event){
 		if((canModifyMoves)&&(moves_max > 0)){
 			moves.push(0);
 			moves_max--;
@@ -175,7 +175,7 @@ function startGame() {
 			scroll_to_latest_command();
 		}
 	});
-	document.getElementById('btn_submit').addEventListener('click', (event) => {
+	document.getElementById('btn_submit').addEventListener('click',function(event){
 		if (!socket_err) {
 			if (canModifyMoves) {
 				var commandStr = "submit";
@@ -190,7 +190,7 @@ function startGame() {
 		}
 	});
 	document.getElementById('chat').value = ""; // Reset chat
-	document.getElementById('chat').addEventListener("keypress", (event) => {
+	document.getElementById('chat').addEventListener("keypress",function(event){
 		if (event.key == 'Enter') {
 			console.log(event.target.value);
 			console.log(event.target.value.length);
@@ -203,24 +203,33 @@ function startGame() {
 
 	//Load Pixi stuff
 	renderInit();
-	let background = PIXI.Sprite.fromImage("assets/back.png");
+	var background = PIXI.Sprite.fromImage("assets/back.png");
 	background.width = 640;
 	background.height = 640;
 	background.anchor.set(0);
 	tiles.background = background;
-	let wall = PIXI.Texture.fromImage("assets/wall1.png");
+	var wall = PIXI.Texture.fromImage("assets/wall1.png");
 	tiles.wall = [wall, wall];
-	let ground = PIXI.Texture.fromImage("assets/ground1.png");
+	var ground = PIXI.Texture.fromImage("assets/ground1.png");
 	tiles.ground = [ground, ground];
-	let door1 = PIXI.Texture.fromImage("assets/door0.png");
-	let door2 = PIXI.Texture.fromImage("assets/door1.png");
+	var door1 = PIXI.Texture.fromImage("assets/door0.png");
+	var door2 = PIXI.Texture.fromImage("assets/door1.png");
 	tiles.door = [door1, door2];
-	let plate = PIXI.Texture.fromImage("assets/plate1.png");
+	var plate = PIXI.Texture.fromImage("assets/plate1.png");
 	tiles.plate = [plate, plate];
-	let player1 = PIXI.Texture.fromImage("assets/player1.png");
-	let player2 = PIXI.Texture.fromImage("assets/player2.png");
-	tiles.player = [[player1, player1, player1, player1], [player2, player2, player2, player2]];
-	let exit = PIXI.Texture.fromImage("assets/exit1.png");
+	//var player1 = PIXI.Texture.fromImage("assets/player1.png");	
+	//var player2 = PIXI.Texture.fromImage("assets/player2.png");
+	//tiles.player = [[player1, player1, player1, player1], [player2, player2, player2, player2]];
+	player_textures = [];
+	for (var i=0;i<2;++i){
+		player_directions = [];
+		for (var j=0;j<4;++j){
+			player_directions.push(PIXI.Texture.fromImage("assets/robot"+i+"_"+j+".png"));
+		}
+		player_textures.push(player_directions);
+	}
+	tiles.player = player_textures;
+	var exit = PIXI.Texture.fromImage("assets/exit1.png");
 	tiles.exit = [exit, exit];
 }
 
@@ -237,7 +246,7 @@ function update_stage(level) {
 			for (var idx=0;idx<tile.length;++idx){
 				var obj = tile[idx];
 				//console.log("%s %s %s %s", JSON.stringify(obj[0]), x, y, tile_types[obj[0]]);
-				let texture;
+				var texture;
 				if (obj[0] == 5) {
 					texture = tiles[tile_types[obj[0]]][obj[1]][obj[2]];
 				}
@@ -245,7 +254,7 @@ function update_stage(level) {
 					texture = tiles[tile_types[obj[0]]][obj[1]];
 				}
 				//console.log(texture);
-				let tileSprite = new PIXI.Sprite(texture);
+				var tileSprite = new PIXI.Sprite(texture);
 				tileSprite.anchor.set(0);
 				tileSprite.width = TILE_WIDTH;
 				tileSprite.height = TILE_HEIGHT;
@@ -257,9 +266,9 @@ function update_stage(level) {
 	};
 	// app.stage.addChild(array.background);
 	// for (let i = 0; i < 10; i++){
-	// 	let position = TILE_WIDTH * i;
+	// 	var position = TILE_WIDTH * i;
 		// console.log(position);
-	// 	let tile = new PIXI.Sprite(array.wall);
+	// 	var tile = new PIXI.Sprite(array.wall);
 	// 	tile.anchor.set(0);
 	// 	tile.width = TILE_WIDTH;
 	// 	tile.height = TILE_HEIGHT;
