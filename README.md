@@ -5,8 +5,11 @@ This is the submission of team "TheNewMeta" for Plovdiv Game Jam 2018. It is a m
 System requirements:
 --------------------
 Client - Modern browser with WebSockets and WebGL support.
+<br/>
 Server - Java 8 or newer.
 
 A very big thank you to the people who created the following:
+<br/>
 A WebSocket Java implementation - https://github.com/TooTallNate/Java-WebSocket
+<br/>
 GSON - https://github.com/google/gson
