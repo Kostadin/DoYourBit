@@ -29,7 +29,7 @@ body{
 	width:960px;
 	height:640px;
 	z-index:100;
-	/* background-image: url('../assets/backgr.png'); */
+	background-image: url('../assets/title_screen.png');
 	background-repeat: no-repeat;
 	padding-top: 100px;
 }
@@ -52,6 +52,7 @@ body{
 #credits{
 	width:960px;
 	height:640px;
+	font-family: "Courier New", Courier, monospace;
 }
 
 #creditsTitle{
@@ -145,16 +146,16 @@ body{
 	border-radius:5px;
 	cursor:pointer;
 	font-size:50px;
-	color:#ebdb2d;
-	text-shadow:0px 0px 25px rgb(197,50,21);
+	color:#70e044;
 	border:1px solid black;
 	line-height:70px;
+	font-family: "Courier New", Courier, monospace;
 }
 
 .button:hover {
-	color:#ebdb2d;
-	border:1px solid #ebdb2d;
-	text-shadow:0px 0px 25px rgb(197,50,21);
+	color:#70e044;
+	border:1px solid #70e044;
+	text-shadow:0px 0px 25px #70e044;
 }
 
 #btnResume {

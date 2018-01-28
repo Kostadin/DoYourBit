@@ -73,7 +73,7 @@ function startGame() {
 
 	// WebSocket
 	$('#line1').text('Connecting...');
-	socket = new WebSocket('ws://127.0.0.1:4420');
+	socket = new WebSocket('ws://'+window.location.hostname+':4420');
 	var socket_err = false;
 	socket.addEventListener('open',function(event){
     		socket.send("client");
